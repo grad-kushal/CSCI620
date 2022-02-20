@@ -27,20 +27,6 @@ public class FDDiscovery {
 		Set<String> attributes = new HashSet<>();
 		// These are the functional dependencies discovered.
 		Set<FunctionalDependency> fds = new HashSet<>();
-		
-		// TODO 0: Your code here!
-		
-		// Your program must be generic and work for any relation provided as input. You must read the names of the attributes from the input relation and store
-		//	them in the attributes set.
-		//
-		// You must traverse the lattice of attributes starting from combinations of size 1. Remember that all the functional dependencies we will discover are
-		//	of the form a1, ..., ak -> aj; therefore, there is a single attribute on the right-hand side, and one or more attributes on the left-hand side. Re-
-		//	member also that we are not interested in trivial functional dependencies (right-hand side is included in left-hand side) or non-minimal (there exi-
-		//	sts another functional dependency that is contained in the current one).
-		//
-		// To traverse the lattice, we start from single combinations of attributes in the left-hand side, then combinations of two attributes, then combinatio-
-		//	ns of three attributes, etc. We stop when we have tested all possible combinations. Use Sets.combinations to generate these combinations.
-		//
 
 		
 		// Read attributes. Use the metadata to get the column info.
@@ -74,22 +60,9 @@ public class FDDiscovery {
 						//System.out.println("HERE2");
 						fds.add(candidateFD);
 					}
-
 				}
-				
-				// Form the candidate FD using both left-hand and right-hand sides.
-				
-				// Make sure that the candidate FD is not trivial and minimal.
-				
-				// Make sure that the candidate FD is an FD. Build a SQL query to check it.
-				
-				// If it is an FD, add it to the set of discovered FDs.
 			}
 		}
-		
-		// TODO 0: End of your code.
-			
-		// Write to file!
 
 		PrintWriter writer = new PrintWriter(new File(outputFile));
 		for (Object fd : fds)
@@ -100,12 +73,6 @@ public class FDDiscovery {
 	}
 
 	private static boolean isValidFunctionalDependency(FunctionalDependency candidateFD, Connection con, String relationName) throws SQLException {
-		// a1, a2 -> a3 is a functional dependency for relation x if the following SQL query outputs no result:
-		//	SELECT * FROM x AS t1 JOIN x AS t2 ON t1.a1 = t2.a1 AND t1.a2 = t2.a2 WHERE t1.a3 <> t2.a3
-		//
-		//	You must compose this type of SQL for the different combinations of attributes to find functional dependencies.
-
-		//System.out.println("-------------IN----------------");
 
 		StringBuilder query1StPart = new StringBuilder("SELECT * FROM " + relationName + " AS t1 JOIN " + relationName + " AS t2 ON ");
 		String query2NdPart = "";
