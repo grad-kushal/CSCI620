@@ -90,6 +90,22 @@ class FunctionalDependency {
 		this.rightHandSide = rightHandSide;
 	}
 
+	public boolean isTrivial() {
+		return this.leftHandSide.containsAll(this.rightHandSide);
+	}
+
+	public boolean isMinimal(Set<FunctionalDependency> functionalDependencySet) {
+		boolean result = true;
+		//System.out.println("2");
+		if (!functionalDependencySet.isEmpty()) {
+			for (FunctionalDependency establishedFD : functionalDependencySet) {
+				if (this.contains(establishedFD)) {
+					result = false;
+				}
+			}
+		}
+		return result;
+	}
 
 	@Override
 	public String toString() {
