@@ -1,0 +1,3 @@
+SELECT *
+FROM Writer
+LIMIT 22;

@@ -1,0 +1,1 @@
+SELECT knownfor.pid FROM knownfor JOIN director ON knownfor.mid=director.mid JOIN actor ON knownfor.mid = actor.mid WHERE director.pid = '1068' or actor.pid = '104';

@@ -1,0 +1,1 @@
+select pid as q, count(mid) from person JOIN actor ON id = pid JOIN movie ON mid = movie.id WHERE dyear IS NULL AND year = '2016' AND runtime > '90' GROUP BY pid HAVING count(mid) > 3 AND q NOT IN(SELECT pid from actor as a JOIN movie AS m ON m.id = a.mid WHERE year > '2017');
