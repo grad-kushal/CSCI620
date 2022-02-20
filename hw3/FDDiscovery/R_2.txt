@@ -1,9 +1,0 @@
-movieid -> year
-title -> year
-title -> adult
-movieid -> runtime
-movieid -> title
-genre -> genreid
-genreid -> genre
-movieid -> adult
-title -> runtime
