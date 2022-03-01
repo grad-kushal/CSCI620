@@ -2,21 +2,20 @@ package edu.rit.ibd.a4;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.Iterator;
 
-import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.Updates;
+import org.bson.BsonDocument;
 import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.bson.types.Decimal128;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-
-import javax.print.Doc;
+import org.bson.conversions.Bson;
+import org.bson.types.Decimal128;
 
 public class IMDBSQLToMongo {
 
@@ -110,83 +109,112 @@ public class IMDBSQLToMongo {
 		 * Note that array fields that are empty are not allowed, so you should not generate them.
 		 *  
 		 */
-		
-		
-		//MongoCollection<Document> col = db.getCollection("Collection");
 
-		// Try to use few queries that retrieve big chunks of data rather than many queries that retrieve small pieces of data.
-//		PreparedStatement st = con.prepareStatement("SELECT * from Movie");
-//		st.setFetchSize(/* Batch size */ 10000);
-//		ResultSet rs = st.executeQuery();
-//		MovieTable movieTable = new MovieTable(rs);
-//		//System.out.println(movieTable.movies.size());
-//		MongoCollection<Document> col = db.getCollection("movie");
-//		for (Movie m : movieTable.movies) {
-//			Document d = new Document();
-//			d.append("_id", m.id);
-//			d.append("ptitle", m.ptitle);
-//			d.append("otitle", m.otitle);
-//			d.append("adult", m.adult);
-//			if (m.year != 0) {
-//				d.append("year", m.year);
-//			}
-//			if (m.runtime != 0) {
-//				d.append("runtime", m.runtime);
-//			}
-//			if (m.rating != null) {
-//				d.append("rating", new Decimal128(m.rating));
-//			}
-//			if (m.totalvotes != 0) {
-//				d.append("totalvotes", m.totalvotes);
-//			}
-//			col.insertOne(d);
-//		}
-//		rs.close();
-//		st.close();
-//
-//		st = con.prepareStatement("SELECT * from Person");
-//		st.setFetchSize(/* Batch size */ 20000);
-//		rs = st.executeQuery();
-//		PersonTable personTable = new PersonTable(rs);
-//		MongoCollection<Document> col2 = db.getCollection("person");
-//		int cnt = 0;
-//		for (Person p : personTable.people) {
-//			//System.out.println(cnt++);
-//			Document d = new Document();
-//			d.append("_id", p.id);
-//			d.append("name", p.name);
-//			if (p.birthYear != 0)
-//				d.append("byear", p.birthYear);
-//			if (p.deathYear != 0)
-//				d.append("dyear", p.deathYear);
-//			col2.insertOne(d);
-//		}
-//		rs.close();
-//		st.close();
-//
-//
-//		st = con.prepareStatement("...");
-		//st.setFetchSize(batchSize);
-//		rs = st.executeQuery();
-//		while (rs.next())
-//			col.updateOne(/* Filter to grab a single document */ (Bson) null, /* Changes to perform; use $push/$addToSet to add values to arrays. */ (Bson) null);
-//		rs.close();
-//		st.close();
+		PreparedStatement st = con.prepareStatement("SELECT * from Movie");
+		st.setFetchSize(/* Batch size */ 50000);
+		ResultSet rs = st.executeQuery();
+		MovieTable movieTable = new MovieTable(rs);
+		//System.out.println(movieTable.movies.size());
+		MongoCollection<Document> col = db.getCollection("movie");
+		for (Movie m : movieTable.movies) {
+			Document d = new Document();
+			d.append("_id", m.id);
+			d.append("ptitle", m.ptitle);
+			d.append("otitle", m.otitle);
+			d.append("adult", m.adult);
+			if (m.year != 0) {
+				d.append("year", m.year);
+			}
+			if (m.runtime != 0) {
+				d.append("runtime", m.runtime);
+			}
+			if (m.rating != null) {
+				d.append("rating", new Decimal128(m.rating));
+			}
+			if (m.totalvotes != 0) {
+				d.append("totalvotes", m.totalvotes);
+			}
+			col.insertOne(d);
+		}
+		rs.close();
+		st.close();
 
-		PreparedStatement pr = con.prepareStatement("SELECT pid, mid FROM imdb_ibd_a1.person JOIN actor ON id=pid JOIN movie on movie.id = mid WHERE mid IN (select distinct mid from actor);")
+		st = con.prepareStatement("SELECT * from Person");
+		st.setFetchSize(50000);
+		rs = st.executeQuery();
+		PersonTable personTable = new PersonTable(rs);
+		MongoCollection<Document> col2 = db.getCollection("person");
+		for (Person p : personTable.people) {
+			//System.out.println(cnt++);
+			Document d = new Document();
+			d.append("_id", p.id);
+			d.append("name", p.name);
+			if (p.birthYear != 0)
+				d.append("byear", p.birthYear);
+			if (p.deathYear != 0)
+				d.append("dyear", p.deathYear);
+			col2.insertOne(d);
+		}
+		rs.close();
+		st.close();
 
-		//Creating a collection object
-		//MongoCollection<Document> collectionRead = db.getCollection("movie");
-		//Retrieving the documents
-		//FindIterable<Document> iterableDocument = collectionRead.find();
-		//Iterator it = iterableDocument.iterator();
-//		while (it.hasNext()) {
-//			Document tempDoc = (Document) it.next();
-//
-//			System.out.println("GGGGGGGGGG: " + it.next().toString());
-//			break;
-//		}
-		
+
+		MongoCollection<Document> collection = db.getCollection("moviesdenorm");
+		UpdateOptions options = new UpdateOptions().upsert(true);
+
+		PreparedStatement pr = con.prepareStatement("select mid, pid from actor where mid in (select distinct id from movie)");
+		pr.setFetchSize(50000);
+		ResultSet resultSet = pr.executeQuery();
+		MovieProfessional movieProfessionals = new MovieProfessional(resultSet);
+		System.out.println(movieProfessionals.list.size());
+		for (Map.Entry e : movieProfessionals.list.entrySet()) {
+			int movieId = (int) e.getKey();
+			Document filter = new Document().append("_id", movieId);
+			Bson updates = Updates.combine(Updates.set("actors", e.getValue()));
+			collection.updateOne(filter, updates, options);
+		}
+
+		pr = con.prepareStatement("select mid, pid from director where mid in (select distinct id from movie)");
+		pr.setFetchSize(80000);
+		resultSet = pr.executeQuery();
+		movieProfessionals = new MovieProfessional(resultSet);
+		System.out.println(movieProfessionals.list.size());
+		//collection = db.getCollection("moviesdenorm");
+		for (Map.Entry e : movieProfessionals.list.entrySet()) {
+			int movieId = (int) e.getKey();
+			Document filter = new Document().append("_id",  movieId);
+			Bson updates = Updates.combine(Updates.set("directors", e.getValue()));
+			collection.updateOne(filter, updates, options);
+		}
+
+		pr = con.prepareStatement("select mid, pid from producer where mid in (select distinct id from movie)");
+		pr.setFetchSize(50000);
+		resultSet = pr.executeQuery();
+		movieProfessionals = new MovieProfessional(resultSet);
+		System.out.println(movieProfessionals.list.size());
+		//collection = db.getCollection("moviesdenorm");
+		for (Map.Entry e : movieProfessionals.list.entrySet()) {
+			int movieId = (int) e.getKey();
+			Document filter = new Document().append("_id",  movieId);
+			Bson updates = Updates.combine(Updates.set("producers", e.getValue()));
+			collection.updateOne(filter, updates, options);
+		}
+
+		pr = con.prepareStatement("select mid, pid from writer where mid in (select distinct id from movie)");
+		pr.setFetchSize(50000);
+		resultSet = pr.executeQuery();
+		movieProfessionals = new MovieProfessional(resultSet);
+		System.out.println(movieProfessionals.list.size());
+		//collection = db.getCollection("moviesdenorm");
+		for (Map.Entry e : movieProfessionals.list.entrySet()) {
+			int movieId = (int) e.getKey();
+			Document filter = new Document().append("_id",  movieId);
+			Bson updates = Updates.combine(Updates.set("writers", e.getValue()));
+			collection.updateOne(filter, updates, options);
+		}
+
+		resultSet.close();
+		pr.close();
 		// TODO 0: End of your code.
 		
 		client.close();
@@ -284,6 +312,22 @@ class PersonTable {
 					rs.getInt("byear"),
 					rs.getInt("dyear"));
 			people.add(p);
+		}
+	}
+}
+
+class MovieProfessional {
+	HashMap<Integer, ArrayList<Integer>> list;
+
+	public MovieProfessional(ResultSet rs) throws SQLException {
+		list = new HashMap<>();
+
+		while (rs.next()) {
+			int movie = rs.getInt("mid");
+			if (!list.containsKey(movie)) {
+				list.put(movie, new ArrayList<>());
+			}
+			list.get(movie).add(rs.getInt("pid"));
 		}
 	}
 }
