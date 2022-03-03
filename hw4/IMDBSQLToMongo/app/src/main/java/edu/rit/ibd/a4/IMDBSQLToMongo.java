@@ -7,7 +7,6 @@ import java.util.Date;
 
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
-import org.bson.BsonDocument;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
@@ -111,11 +110,10 @@ public class IMDBSQLToMongo {
 		 */
 
 		PreparedStatement st = con.prepareStatement("SELECT * from Movie");
-		st.setFetchSize(/* Batch size */ 50000);
+		st.setFetchSize(50000);
 		ResultSet rs = st.executeQuery();
 		MovieTable movieTable = new MovieTable(rs);
-		//System.out.println(movieTable.movies.size());
-		MongoCollection<Document> col = db.getCollection("movie");
+		MongoCollection<Document> col = db.getCollection("movies");
 		for (Movie m : movieTable.movies) {
 			Document d = new Document();
 			d.append("_id", m.id);
@@ -143,7 +141,7 @@ public class IMDBSQLToMongo {
 		st.setFetchSize(50000);
 		rs = st.executeQuery();
 		PersonTable personTable = new PersonTable(rs);
-		MongoCollection<Document> col2 = db.getCollection("person");
+		MongoCollection<Document> col2 = db.getCollection("people");
 		for (Person p : personTable.people) {
 			//System.out.println(cnt++);
 			Document d = new Document();
@@ -160,12 +158,14 @@ public class IMDBSQLToMongo {
 
 
 		MongoCollection<Document> collection = db.getCollection("moviesdenorm");
+		MongoCollection<Document> collection2 = db.getCollection("peopledenorm");
 		UpdateOptions options = new UpdateOptions().upsert(true);
 
-		PreparedStatement pr = con.prepareStatement("select mid, pid from actor where mid in (select distinct id from movie)");
+		PreparedStatement pr = con.prepareStatement("select mid, pid from actor");
 		pr.setFetchSize(50000);
 		ResultSet resultSet = pr.executeQuery();
 		MovieProfessional movieProfessionals = new MovieProfessional(resultSet);
+		ProfessionalDetails professionalDetails = new ProfessionalDetails( resultSet);
 		System.out.println(movieProfessionals.list.size());
 		for (Map.Entry e : movieProfessionals.list.entrySet()) {
 			int movieId = (int) e.getKey();
@@ -173,12 +173,34 @@ public class IMDBSQLToMongo {
 			Bson updates = Updates.combine(Updates.set("actors", e.getValue()));
 			collection.updateOne(filter, updates, options);
 		}
+		//collection = db.getCollection("peopledenorm");
+		for (Map.Entry e : professionalDetails.list.entrySet()) {
+			int personId = (int) e.getKey();
+			Document filter = new Document().append("_id", personId);
+			Bson updates = Updates.combine(Updates.set("acted", e.getValue()));
+			collection2.updateOne(filter, updates, options);
+		}
 
-		pr = con.prepareStatement("select mid, pid from director where mid in (select distinct id from movie)");
+		pr = con.prepareStatement("select mid, gid from moviegenre");
+		pr.setFetchSize(50000);
+		resultSet = pr.executeQuery();
+		MovieGenre movieGenre = new MovieGenre(resultSet);
+		System.out.println(movieGenre.list.size());
+		//collection = db.getCollection("movies");
+		for (Map.Entry e : movieGenre.list.entrySet()) {
+			int movieId = (int) e.getKey();
+			Document filter = new Document().append("_id",  movieId);
+			Bson updates = Updates.combine(Updates.set("genres", e.getValue()));
+			collection.updateOne(filter, updates, options);
+		}
+
+		pr = con.prepareStatement("select mid, pid from director");
 		pr.setFetchSize(80000);
 		resultSet = pr.executeQuery();
 		movieProfessionals = new MovieProfessional(resultSet);
+		professionalDetails = new ProfessionalDetails( resultSet);
 		System.out.println(movieProfessionals.list.size());
+		System.out.println(professionalDetails.list.size());
 		//collection = db.getCollection("moviesdenorm");
 		for (Map.Entry e : movieProfessionals.list.entrySet()) {
 			int movieId = (int) e.getKey();
@@ -186,11 +208,20 @@ public class IMDBSQLToMongo {
 			Bson updates = Updates.combine(Updates.set("directors", e.getValue()));
 			collection.updateOne(filter, updates, options);
 		}
+		//collection = db.getCollection("peopledenorm");
+		for (Map.Entry e : professionalDetails.list.entrySet()) {
+			int personId = (int) e.getKey();
+			Document filter = new Document().append("_id", personId);
+			Bson updates = Updates.combine(Updates.set("directed", e.getValue()));
+			collection2.updateOne(filter, updates, options);
+		}
 
-		pr = con.prepareStatement("select mid, pid from producer where mid in (select distinct id from movie)");
+
+		pr = con.prepareStatement("select mid, pid from producer");
 		pr.setFetchSize(50000);
 		resultSet = pr.executeQuery();
 		movieProfessionals = new MovieProfessional(resultSet);
+		professionalDetails = new ProfessionalDetails( resultSet);
 		System.out.println(movieProfessionals.list.size());
 		//collection = db.getCollection("moviesdenorm");
 		for (Map.Entry e : movieProfessionals.list.entrySet()) {
@@ -199,11 +230,19 @@ public class IMDBSQLToMongo {
 			Bson updates = Updates.combine(Updates.set("producers", e.getValue()));
 			collection.updateOne(filter, updates, options);
 		}
+		//collection = db.getCollection("peopledenorm");
+		for (Map.Entry e : professionalDetails.list.entrySet()) {
+			int personId = (int) e.getKey();
+			Document filter = new Document().append("_id", personId);
+			Bson updates = Updates.combine(Updates.set("produced", e.getValue()));
+			collection2.updateOne(filter, updates, options);
+		}
 
-		pr = con.prepareStatement("select mid, pid from writer where mid in (select distinct id from movie)");
+		pr = con.prepareStatement("select mid, pid from writer");
 		pr.setFetchSize(50000);
 		resultSet = pr.executeQuery();
 		movieProfessionals = new MovieProfessional(resultSet);
+		professionalDetails = new ProfessionalDetails( resultSet);
 		System.out.println(movieProfessionals.list.size());
 		//collection = db.getCollection("moviesdenorm");
 		for (Map.Entry e : movieProfessionals.list.entrySet()) {
@@ -211,6 +250,13 @@ public class IMDBSQLToMongo {
 			Document filter = new Document().append("_id",  movieId);
 			Bson updates = Updates.combine(Updates.set("writers", e.getValue()));
 			collection.updateOne(filter, updates, options);
+		}
+		//collection = db.getCollection("peopledenorm");
+		for (Map.Entry e : professionalDetails.list.entrySet()) {
+			int personId = (int) e.getKey();
+			Document filter = new Document().append("_id", personId);
+			Bson updates = Updates.combine(Updates.set("written", e.getValue()));
+			collection2.updateOne(filter, updates, options);
 		}
 
 		resultSet.close();
@@ -328,6 +374,38 @@ class MovieProfessional {
 				list.put(movie, new ArrayList<>());
 			}
 			list.get(movie).add(rs.getInt("pid"));
+		}
+	}
+}
+
+class ProfessionalDetails {
+	HashMap<Integer, ArrayList<Integer>> list;
+
+	public ProfessionalDetails(ResultSet rs) throws SQLException {
+		list = new HashMap<>();
+
+		while (rs.next()) {
+			int person = rs.getInt("pid");
+			if (!list.containsKey(person)) {
+				list.put(person, new ArrayList<>());
+			}
+			list.get(person).add(rs.getInt("mid"));
+		}
+	}
+}
+
+class MovieGenre {
+	HashMap<Integer, ArrayList<Integer>> list;
+
+	public MovieGenre(ResultSet rs) throws SQLException {
+		list = new HashMap<>();
+
+		while (rs.next()) {
+			int movie = rs.getInt("mid");
+			if (!list.containsKey(movie)) {
+				list.put(movie, new ArrayList<>());
+			}
+			list.get(movie).add(rs.getInt("gid"));
 		}
 	}
 }
