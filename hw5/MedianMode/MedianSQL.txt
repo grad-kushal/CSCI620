@@ -1,0 +1,1 @@
+select attribute, count(attribute) as f from @@Relation@@ group by attribute having f >= all (select f from (select attribute, count(attribute) as f from @@Relation@@ group by attribute) as f );

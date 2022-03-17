@@ -1,0 +1,3 @@
+SELECT *
+FROM @@Relation@@
+LIMIT 1
