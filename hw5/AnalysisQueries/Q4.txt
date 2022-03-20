@@ -1,3 +1,18 @@
-SELECT *
-FROM Movies
-LIMIT 1
+SELECT 	(SELECT MIN(v.rating) FROM @@View@@ AS v) AS minimum,
+		(SELECT MAX(v.rating) FROM @@View@@ AS v) AS maximum,
+        (SELECT YK+ALPHA*(YKPO-YK) AS median
+		FROM
+			(SELECT rating AS YK FROM @@View@@ as v WHERE position = (SELECT TRUNCATE(0.5 * (COUNT(*) + 1), 0) AS K FROM @@View@@ AS v)) AS A,
+			(SELECT rating AS YKPO FROM @@View@@ AS v WHERE position = (SELECT TRUNCATE(0.5 * (COUNT(*) + 1) + 1, 0) AS KPO FROM @@View@@ AS v)) AS B,
+			(SELECT J-K AS ALPHA FROM ((SELECT ROUND((0.5 * COUNT(*) + 1),0) AS J FROM @@View@@ AS v) AS X, (SELECT TRUNCATE(0.5 * (COUNT(*) + 1), 0) AS K FROM @@View@@ AS v) AS Y)) AS C) AS median,
+		(SELECT YK+ALPHA*(YKPO-YK) AS qone
+		FROM
+			(SELECT rating AS YK FROM @@View@@ as v WHERE position = (SELECT TRUNCATE(0.25 * (COUNT(*) + 1), 0) AS K FROM @@View@@ AS v)) AS A,
+			(SELECT rating AS YKPO FROM @@View@@ AS v WHERE position = (SELECT TRUNCATE(0.25 * (COUNT(*) + 1) + 1, 0) AS KPO FROM @@View@@ AS v)) AS B,
+			(SELECT J-K AS ALPHA FROM ((SELECT ROUND((0.25 * COUNT(*) + 1),0) AS J FROM @@View@@ AS v) AS X, (SELECT TRUNCATE(0.25 * (COUNT(*) + 1), 0) AS K FROM @@View@@ AS v) AS Y)) AS C) AS qone,
+		(SELECT YK+ALPHA*(YKPO-YK) AS qthree
+		FROM
+			(SELECT rating AS YK FROM @@View@@ as v WHERE position = (SELECT TRUNCATE(0.75 * (COUNT(*) + 1), 0) AS K FROM @@View@@ AS v)) AS A,
+			(SELECT rating AS YKPO FROM @@View@@ AS v WHERE position = (SELECT TRUNCATE(0.75 * (COUNT(*) + 1) + 1, 0) AS KPO FROM @@View@@ AS v)) AS B,
+			(SELECT J-K AS ALPHA FROM ((SELECT ROUND((0.75 * COUNT(*) + 1),0) AS J FROM @@View@@ AS v) AS X, (SELECT TRUNCATE(0.75 * (COUNT(*) + 1), 0) AS K FROM @@View@@ AS v) AS Y)) AS C) AS qthree
+;
