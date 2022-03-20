@@ -1,3 +1,10 @@
-SELECT *
+select attribute, count(attribute) as f from @@Relation@@ group by attribute having f >= all (select f from (select attribute, count(attribute) as f from @@Relation@@ group by attribute) as f );
+SELECT attribute, count(attribute) AS f
 FROM @@Relation@@
-LIMIT 1
+GROUP BY attribute
+HAVING f >= ALL (
+	SELECT f
+    FROM (
+		SELECT attribute, count(attribute) AS f
+        FROM @@Relation@@
+        GROUP BY attribute) AS f );

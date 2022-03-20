@@ -1,0 +1,5 @@
+SELECT COUNT(m.id) as freq, m.rating, g.name as genre
+FROM Genre as g JOIN MovieGenre as mg on mg.gid = g.id JOIN Movie as m on m.id = mg.mid
+WHERE year <= @@EndYear@@ AND year >= @@InitYear@@
+GROUP BY m.rating, g.name
+HAVING freq > @@Frequency@@

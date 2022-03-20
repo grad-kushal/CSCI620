@@ -1,1 +1,9 @@
-select attribute, count(attribute) as f from @@Relation@@ group by attribute having f >= all (select f from (select attribute, count(attribute) as f from @@Relation@@ group by attribute) as f );
+SELECT YK+ALPHA*(YKPO-YK)
+FROM (SELECT attribute AS YK
+      FROM @@Relation@@
+      WHERE position = (SELECT TRUNCATE(@@p@@ * (COUNT(*) + 1), 0) AS K FROM @@Relation@@ AS L)) AS A,
+     (SELECT attribute AS YKPO
+      FROM @@Relation@@
+      WHERE position = (SELECT TRUNCATE(@@p@@ * (COUNT(*) + 1) + 1, 0) AS KPO FROM @@Relation@@ AS M)) AS B,
+     (SELECT J-K AS ALPHA
+      FROM ((SELECT ROUND((@@p@@ * COUNT(*) + 1),0) AS J FROM @@Relation@@) AS X, (SELECT TRUNCATE(@@p@@ * (COUNT(*) + 1), 0) AS K FROM @@Relation@@) AS Y)) AS C;
