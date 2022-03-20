@@ -1,1 +1,20 @@
-{initialCollection:'???', pipeline:[ ]}
+{initialCollection:'Movies', pipeline:[
+
+]}
+
+{$sort: {rating: 1}},
+{$group: {_id: null, array: {$push: "$rating"}}},
+{$project: {K: {$trunc: {$multiply: [0.5, {$add: [1, {$size: "$array"}]}]}}, array: "$array"}},
+{$project: {ALPHA: {$subtract: [{$round: {$multiply: [0.5, {$add: [1, {$size: "$array"}]}]}}, "$K"]}, array: "$array", K: 1}},
+{$project: {YK: {$arrayElemAt: ["$array", "$K"]}, YKPO: {$arrayElemAt: ["$array", {$add: [1, "$K"]}]}, ALPHA: 1, _id: 0}},
+{$project: {median: {$add: ["$YK", {$multiply:["$ALPHA", {$subtract: ["$YKPO", "$YK"]}]}]}}},
+{$project: {K: {$trunc: {$multiply: [0.25, {$add: [1, {$size: "$array"}]}]}}, array: "$array"}, median: 1},
+{$project: {ALPHA: {$subtract: [{$round: {$multiply: [0.25, {$add: [1, {$size: "$array"}]}]}}, "$K"]}, array: "$array", K: 1}, median: 1},
+{$project: {YK: {$arrayElemAt: ["$array", "$K"]}, YKPO: {$arrayElemAt: ["$array", {$add: [1, "$K"]}]}, ALPHA: 1, _id: 0}, median: 1},
+{$project: {qone: {$add: ["$YK", {$multiply:["$ALPHA", {$subtract: ["$YKPO", "$YK"]}]}]}, median: 1}},
+{$project: {K: {$trunc: {$multiply: [0.75, {$add: [1, {$size: "$array"}]}]}}, array: "$array"}, median: 1, qone: 1},
+{$project: {ALPHA: {$subtract: [{$round: {$multiply: [0.75, {$add: [1, {$size: "$array"}]}]}}, "$K"]}, array: "$array", K: 1}, median: 1, qone: 1},
+{$project: {YK: {$arrayElemAt: ["$array", "$K"]}, YKPO: {$arrayElemAt: ["$array", {$add: [1, "$K"]}]}, ALPHA: 1, _id: 0}, median: 1, qone: 1},
+{$project: {qthree: {$add: ["$YK", {$multiply:["$ALPHA", {$subtract: ["$YKPO", "$YK"]}]}]}, median: 1, qone: 1}},
+{$project: {$min: "$attribute"}},
+{$project: {$max: "$attribute"}}
