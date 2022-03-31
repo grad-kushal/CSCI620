@@ -1,5 +1,6 @@
 package edu.rit.ibd.a6;
 
+import com.mongodb.client.FindIterable;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
@@ -7,7 +8,9 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-public class AprioriGen_Template {
+import javax.print.Doc;
+
+public class AprioriGen {
 
 	public static void main(String[] args) throws Exception {
 		final String mongoDBURL = args[0];
@@ -20,9 +23,29 @@ public class AprioriGen_Template {
 		
 		MongoCollection<Document> lKMinusOne = db.getCollection(mongoColLKMinusOne);
 		MongoCollection<Document> ck = db.getCollection(mongoColCK);
-		
+
 		// TODO Your code here!
-		
+		Document dTemp = lKMinusOne.find().first();
+		int kMinusOne = ((Document)dTemp.get("items")).size();
+		FindIterable<Document> iterableCollection = lKMinusOne.find().batchSize(101);
+		for (Document d1 : iterableCollection) {
+			for (Document d2 : iterableCollection) {
+				if (!d1.equals(d2)) {
+					Document d1Items = (Document) d1.get("items");
+					Document d2Items = (Document) d2.get("items");
+					for (int i = 0; i < kMinusOne; i++) {
+						boolean flag = true;
+						if (! (d1Items.get("pos_" + i) == d2Items.get("pos_" + i))) {
+							flag = false;
+							break;
+						}
+						if (flag == false) {
+
+						}
+					}
+				}
+			}
+		}
 		/*
 		 * 
 		 * First, you must figure out the current k-1 by checking the number of items in the input collection.

@@ -10,7 +10,7 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-public class AprioriGenOpt_Template {
+public class AprioriGenOpt{
 
 	public static void main(String[] args) throws Exception {
 		final String mongoDBURL = args[0];

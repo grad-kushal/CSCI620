@@ -35,25 +35,27 @@ public class GenerateLK {
 		UpdateOptions options = new UpdateOptions().upsert(true);
 		
 		// TODO Your code here!
-		for (Document t : transactions.find().batchSize(200)) {
+		for (Document t : transactions.find().batchSize(101)) {
 			for (Document c : ck.find().batchSize(101)) {
 				ArrayList<Integer> transactionItems = (ArrayList<Integer>)t.get("items");
-				ArrayList<Document> cItemsDocuments = (ArrayList<Document>)  c.get("items");
-				int k = 0;
-				//for (Document cid : cItemsDocuments)
-
-				//int cCount = c.getInteger("count");
-//				int k = cItems.size();
-//				if (transactionItems.containsAll(cItems)){
-//					cCount++;
-//					Bson updates = Updates.combine(Updates.inc("count", cCount));
-//					ck.updateOne(c, updates, options);
-//				}
+				Document cItemsDocument = (Document)c.get("items");
+				int cCount = c.getInteger("count");
+				//System.out.println("INITIAL COUNT: " + cCount);
+				ArrayList<Integer> cItemsList = new ArrayList<>();
+				int k = cItemsDocument.size();
+				for (int i = 0; i < k; i++) {
+					cItemsList.add(cItemsDocument.getInteger("pos_" + i));
+				}
+				if (transactionItems.containsAll(cItemsList)){
+					cCount++;
+					Bson updates = Updates.combine(Updates.inc("count", 1));
+					ck.updateOne(c, updates, options);
+				}
 			}
 		}
 		for (Document d : ck.aggregate(Arrays.asList(
 				Aggregates.match(Filters.gte("count", minSup))
-		))) {
+		)).batchSize(101)) {
 			lk.insertOne(d);
 		}
 		/*
