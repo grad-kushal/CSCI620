@@ -1,0 +1,13 @@
+db.movies.aggregate([
+  {$project: {_id: {$lt: 180}}},
+  {$match: {genres: "Sci-Fi"}},
+  {$lookup: {
+    from: "moviesdenorm",
+    localField: "_id",
+    foreignField: "_id",
+    as: "moviedetails"
+  }},
+  {$match: {"moviedetails.writers.1": {$exists: true}}},
+  {$match: {"moviedetails.directors.name": {$regex: "^Kat.*"}}},
+  {$project: {_id: 1}}
+]);

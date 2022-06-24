@@ -12,7 +12,7 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 
-public class IMDBSQLToMongo {
+public class EmployeeInformationApplication {
 
 	static String [] deps = {"Transportation", "Police", "Fire", "Family and Support", "Law", "Sanitation", "Health", "Aviation", "Finance", "Business Affairs", "Water Management", "Housing", "OEMC", "DAIS", "DMV"};
 	public static ArrayList<String> departments = new ArrayList<>(Arrays.asList(deps));
@@ -25,7 +25,7 @@ public class IMDBSQLToMongo {
 		MongoDatabase db = client.getDatabase(mongoDBName);
 
 		generateData(client, db);
-		
+
 		client.close();
 	}
 
@@ -153,7 +153,7 @@ class Employee {
 		this.lname = faker.name().lastName();
 		this.address = faker.address().fullAddress();
 		this.cell = faker.phoneNumber().cellPhone();
-		this.department = (this.id == 0) ? "Executive" : IMDBSQLToMongo.departments.get((this.id%IMDBSQLToMongo.departments.size()));
+		this.department = (this.id == 0) ? "Executive" : EmployeeInformationApplication.departments.get((this.id% EmployeeInformationApplication.departments.size()));
 		this.dob = faker.date().birthday();
 		this.email = fname.toLowerCase() + "." + lname.toLowerCase() + "@dbsimail.com";
 		this.emergency_contact = faker.phoneNumber().cellPhone();

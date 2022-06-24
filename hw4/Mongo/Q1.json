@@ -1,0 +1,11 @@
+{initialCollection:'movies', pipeline:[{$match: {year: {$gte: 2013, $lte: 2021}}},
+  {$match: {rating: {$gt: 6.5}}},
+  {$match: {genres: "Comedy"}},
+  {$lookup: {
+    from: "moviesdenorm",
+    localField: "_id",
+    foreignField: "_id",
+    as: "moviedetails"
+  }},
+  {$match: {"moviedetails.directors.4": {$exists: true}}},
+  {$project: {"_id": 1}}]}

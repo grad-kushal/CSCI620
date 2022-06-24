@@ -1,0 +1,2 @@
+{initialCollection:'movies', pipeline:[{$project: {"_id":1}},
+  { $limit : 4 }]}]}
